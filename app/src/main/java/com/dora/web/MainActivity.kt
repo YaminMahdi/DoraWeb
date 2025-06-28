@@ -20,7 +20,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.dora.web.databinding.ActivityMainBinding
 import com.dora.web.utils.ConnectionListener
-import com.dora.web.utils.Constants
 import com.dora.web.utils.InAppUpdate
 import com.dora.web.utils.showExitDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         inAppUpdate.checkForUpdate()
-        if (Constants.isDarkMode) {
+        if (BuildConfig.isDarkMode) {
             WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {

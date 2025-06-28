@@ -25,7 +25,6 @@ import android.webkit.WebViewClient
 import androidx.activity.addCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -33,12 +32,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.dora.web.databinding.FragmentWebViewBinding
-import com.dora.web.utils.Constants
 import com.dora.web.utils.changeVisibility
 import com.dora.web.utils.invisible
 import com.dora.web.utils.showExitDialog
 import com.dora.web.utils.visible
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -114,9 +111,9 @@ class WebViewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupWebView()
         setupListener()
-        binding.toolbar.changeVisibility(Constants.showToolbar)
-        binding.progressBar.changeVisibility(Constants.showLoading)
-        binding.btnMenu.changeVisibility(Constants.showMenu)
+        binding.toolbar.changeVisibility(BuildConfig.showToolbar)
+        binding.progressBar.changeVisibility(BuildConfig.showLoading)
+        binding.btnMenu.changeVisibility(BuildConfig.showMenu)
     }
 
     private fun setupListener() {
@@ -209,7 +206,7 @@ class WebViewFragment : Fragment() {
             // Enable debugging for development
 
             WebView.setWebContentsDebuggingEnabled(true)
-            if(!Constants.showLoading) return
+            if(!BuildConfig.showLoading) return
                 binding.progressBar.progress = progress
             webViewClient = object : WebViewClient() {
 
@@ -224,7 +221,7 @@ class WebViewFragment : Fragment() {
                 override fun onPageFinished(view: WebView, url: String) {
                     super.onPageFinished(view, url)
                     Log.d("WebView", "Page finished loading: $url")
-                    if(!Constants.showLoading) return
+                    if(!BuildConfig.showLoading) return
                     lifecycleScope.launch {
                         delay(500)
                         binding.progressBar.invisible()
@@ -290,7 +287,7 @@ class WebViewFragment : Fragment() {
 
                         else -> {
                             view.loadUrl(url)
-                            if(!Constants.showLoading) return true
+                            if(!BuildConfig.showLoading) return true
                             binding.progressBar.visible()
                         }
                     }

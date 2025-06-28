@@ -5,16 +5,21 @@ plugins {
 
 android {
     namespace = "com.dora.web"
-    compileSdk = 36
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
-        applicationId = "com.dora.web"
-        minSdk = 21
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = ProjectConfig.applicationId
+        minSdk = ProjectConfig.minSdk
+        targetSdk = ProjectConfig.targetSdk
+        versionCode = ProjectConfig.versionCode
+        versionName = ProjectConfig.versionName
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "BASE_URL", "\"${ProjectConfig.BASE_URL}\"")
+        buildConfigField("boolean", "isDarkMode", "Boolean.parseBoolean(\"${ProjectConfig.isDarkMode}\")")
+        buildConfigField("boolean", "showToolbar", "Boolean.parseBoolean(\"${ProjectConfig.showToolbar}\")")
+        buildConfigField("boolean", "showLoading", "Boolean.parseBoolean(\"${ProjectConfig.showLoading}\")")
+        buildConfigField("boolean", "showMenu", "Boolean.parseBoolean(\"${ProjectConfig.showMenu}\")")
+        resValue("string", "app_name", ProjectConfig.applicationName)
     }
 
     buildTypes {
@@ -31,7 +36,7 @@ android {
         }
     }
     kotlin{
-        jvmToolchain(21)
+        jvmToolchain(ProjectConfig.javaVersion.toString().toInt())
     }
     buildFeatures {
         viewBinding = true
