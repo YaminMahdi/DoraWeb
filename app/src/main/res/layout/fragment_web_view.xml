@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:orientation="vertical"
+    tools:context=".WebViewFragment">
+
+
+    <FrameLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="15dp"
+        android:background="?backgroundColor">
+
+        <LinearLayout
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|start"
+            android:clickable="true"
+            android:contentDescription="@string/go_back"
+            android:focusable="true"
+            android:foreground="@drawable/btn_special_bg"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="7dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="14sp"
+                android:layout_height="14sp"
+                android:contentDescription="@string/go_back"
+                android:src="@drawable/ic_back_new"
+                android:tint="?colorControlNormal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/back"
+                android:textColor="?colorControlNormal"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            app:cardBackgroundColor="?colorPrimary"
+            app:strokeWidth="0dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:drawablePadding="7dp"
+                android:gravity="center"
+                android:text="Menu"
+                app:drawableTint="?colorOnPrimary"
+                android:textColor="?colorOnPrimary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/ic_menu" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="7dp"
+        android:layout_marginVertical="3dp"
+        android:indeterminate="true"
+        android:indeterminateDuration="1000"
+        app:indicatorColor="?colorPrimary"
+        app:trackColor="?colorOnTertiary"
+        app:trackCornerRadius="10dp"
+        app:trackThickness="7dp" />
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

@@ -1,0 +1,33 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.DoraWeb" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorSecondaryContainer">#43ACCDF4</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="background">@color/white</item>
+        <item name="backgroundColor">@color/white</item>
+        <item name="android:windowBackground">@color/white</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.DoraWeb.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="NavigationDrawer" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorControlHighlight">#A88DBAF2</item>
+    </style>
+
+    <style name="Theme.DoraWeb.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
+    <style name="Theme.DoraWeb.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.DoraWeb</item>
+<!--        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="31">@drawable/logo</item>-->
+        <item name="android:windowSplashScreenBehavior" tools:targetApi="33">icon_preferred</item>
+    </style>
+
+</resources>
