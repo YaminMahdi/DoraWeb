@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
+import android.webkit.JavascriptInterface
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -40,6 +41,7 @@ import com.dora.web.utils.visible
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 
 class WebViewFragment : Fragment() {
@@ -91,15 +93,6 @@ class WebViewFragment : Fragment() {
             filePickerCallback?.onReceiveValue(it.toTypedArray())
         }
 
-//    private var photoUri: Uri? = null
-//    private val launcherCamera =
-//        registerForActivityResult(ActivityResultContracts.TakePicture()) {
-//            Log.d(TAG, "registerForActivityResult: $it")
-//            if (it && photoUri != null)
-//                filePickerCallback?.onReceiveValue(listOfNotNull(photoUri).toTypedArray())
-//            photoUri = null
-//        }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -125,6 +118,9 @@ class WebViewFragment : Fragment() {
         }
         binding.btnMenu.setOnClickListener {
             activity?.findViewById<DrawerLayout>(R.id.drawer_layout)?.openDrawer(GravityCompat.END)
+        }
+        binding.pullToRefresh.setOnRefreshListener {
+            binding.webView.reload()
         }
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
             val drawer = activity?.findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -162,6 +158,16 @@ class WebViewFragment : Fragment() {
 //            """.trimIndent(), null)
             setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
             setScrollbarFadingEnabled(false)
+            addJavascriptInterface(object {
+                @Suppress("unused")
+                @JavascriptInterface
+                fun onUrlChangeStarted(url: String) {
+                    Log.d(TAG, "onUrlChangeStarted: $url")
+                    viewModel.url = url
+                    changeProgressVisibility(true)
+                    changeBackVisibility()
+                }
+            }, "AndroidInterface")
             settings.apply {
                 // Essential JavaScript settings
                 javaScriptEnabled = true
@@ -230,14 +236,41 @@ class WebViewFragment : Fragment() {
                 override fun onPageFinished(view: WebView, url: String) {
                     super.onPageFinished(view, url)
                     Log.d("WebView", "Page finished loading: $url")
-                    if(!BuildConfig.showLoading) return
-                    lifecycleScope.launch {
-                        delay(500)
-                        binding.progressBar.invisible()
-                    }
+                    view.evaluateJavascript("""
+                        (function(history){
+                            var pushState = history.pushState;
+                            var replaceState = history.replaceState;
+                    
+                            function notifyUrlChange() {
+                                if (window.AndroidInterface && window.AndroidInterface.onUrlChangeStarted) {
+                                    window.AndroidInterface.onUrlChangeStarted(location.href);
+                                }
+                            }
+                    
+                            history.pushState = function() {
+                                var result = pushState.apply(history, arguments);
+                                notifyUrlChange();
+                                return result;
+                            };
+                    
+                            history.replaceState = function() {
+                                var result = replaceState.apply(history, arguments);
+                                notifyUrlChange();
+                                return result;
+                            };
+                    
+                            window.addEventListener('popstate', notifyUrlChange);
+                    
+                            // Optional: Trigger once on page load (to catch initial URL)
+                            notifyUrlChange();
+                        })(window.history);
+                    """.trimIndent(), null)
+                    changeProgressVisibility(false, 500)
                 }
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
+                    changeProgressVisibility(true)
+                    changeBackVisibility()
                     Log.d("WebView", "Page started loading: $url")
                 }
 
@@ -265,7 +298,6 @@ class WebViewFragment : Fragment() {
                     request: WebResourceRequest?,
                 ): WebResourceResponse? {
                     Log.d("WebView", "Intercepting request: ${request?.url}")
-                    changeBackVisibility()
                     return super.shouldInterceptRequest(view, request)
                 }
 
@@ -297,8 +329,7 @@ class WebViewFragment : Fragment() {
 
                         else -> {
                             view.loadUrl(url)
-                            if(!BuildConfig.showLoading) return true
-                            binding.progressBar.visible()
+                            changeProgressVisibility(true)
                         }
                     }
                     return true
@@ -349,26 +380,10 @@ class WebViewFragment : Fragment() {
                     val isVideo = acceptTypes.find {
                         it.contains("video/") || it.equals(".mp4") || it == ".avi" || it == ".mkv"
                     } != null
-//                    val capturePhoto = captureEnabled && isPhoto
-//                    val captureVideo = captureEnabled && isVideo
 
                     when (fileChooserParams?.mode) {
                         FileChooserParams.MODE_OPEN -> {
-//                            if(capturePhoto){
-//                                val directory = File(context.filesDir, "camera_images")
-//                                if (!directory.exists())
-//                                    directory.mkdirs()
-//                                val file = File(directory, "${System.currentTimeMillis()}.jpg")
-////                                photoUri = Uri.fromFile(file)
-//                                photoUri = FileProvider. getUriForFile (requireContext(), requireContext().applicationContext.packageName +".provider", file)
-//
-//                                if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA)
-//                                    == PackageManager.PERMISSION_GRANTED
-//                                ) launcherCamera.launch(photoUri)
-//                                else
-//                                    permissionRequestLauncher.launch(android.Manifest.permission.CAMERA)
-//                            }
-//                            else
+
                             if (isPhoto)
                                 launcherSingleMediaPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                             else if (isVideo)
@@ -432,9 +447,24 @@ class WebViewFragment : Fragment() {
     }
 
     private fun changeBackVisibility(timeMillis: Long = 0L) {
-        MainScope().launch {
+        lifecycleScope.launch {
             delay(timeMillis)
             binding.btnBack.changeVisibility(binding.webView.canGoBack() || viewModel.currentIndex != 0)
+        }
+    }
+
+    private fun changeProgressVisibility(isVisible: Boolean, timeMillis: Long = 0L) {
+        lifecycleScope.launch {
+            delay(200)
+            delay(timeMillis)
+            if(binding.pullToRefresh.isRefreshing && !isVisible) {
+                binding.pullToRefresh.isRefreshing = false
+            }
+            if(!BuildConfig.showLoading || binding.pullToRefresh.isRefreshing) return@launch
+            binding.progressBar.changeVisibility(isVisible, useGone = false)
+            if (!isVisible) return@launch
+            delay(1.7.seconds)
+            binding.progressBar.invisible()
         }
     }
 
