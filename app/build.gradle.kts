@@ -20,6 +20,7 @@ android {
         buildConfigField("boolean", "showLoading", "Boolean.parseBoolean(\"${ProjectConfig.showLoading}\")")
         buildConfigField("boolean", "showMenu", "Boolean.parseBoolean(\"${ProjectConfig.showMenu}\")")
         resValue("string", "app_name", ProjectConfig.applicationName)
+        resValue("color", "colorPrimary", ProjectConfig.colorPrimary)
     }
 
     buildTypes {

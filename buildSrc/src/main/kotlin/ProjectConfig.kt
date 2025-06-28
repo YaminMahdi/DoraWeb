@@ -17,4 +17,5 @@ object ProjectConfig {
     const val showToolbar = true
     const val showLoading = true
     const val showMenu = true
+    const val colorPrimary = "#3590FF"
 }

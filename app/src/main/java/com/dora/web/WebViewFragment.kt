@@ -35,7 +35,9 @@ import com.dora.web.databinding.FragmentWebViewBinding
 import com.dora.web.utils.changeVisibility
 import com.dora.web.utils.invisible
 import com.dora.web.utils.showExitDialog
+import com.dora.web.utils.toast
 import com.dora.web.utils.visible
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -116,6 +118,7 @@ class WebViewFragment : Fragment() {
         binding.btnMenu.changeVisibility(BuildConfig.showMenu)
     }
 
+
     private fun setupListener() {
         binding.btnBack.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
@@ -129,8 +132,14 @@ class WebViewFragment : Fragment() {
                 drawer.close()
             else if (binding.webView.canGoBack())
                 binding.webView.goBack()
+            else if (viewModel.currentIndex != 0) {
+                isEnabled = false
+                activity?.onBackPressedDispatcher?.onBackPressed()
+                isEnabled = true
+            }
             else
                 activity?.showExitDialog()
+            changeBackVisibility()
         }
     }
 
@@ -206,7 +215,7 @@ class WebViewFragment : Fragment() {
             // Enable debugging for development
 
             WebView.setWebContentsDebuggingEnabled(true)
-            if(!BuildConfig.showLoading) return
+            if(BuildConfig.showLoading)
                 binding.progressBar.progress = progress
             webViewClient = object : WebViewClient() {
 
@@ -256,12 +265,13 @@ class WebViewFragment : Fragment() {
                     request: WebResourceRequest?,
                 ): WebResourceResponse? {
                     Log.d("WebView", "Intercepting request: ${request?.url}")
+                    changeBackVisibility()
                     return super.shouldInterceptRequest(view, request)
                 }
 
                 @Deprecated("Deprecated")
                 override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-//                    binding.btnBack.changeVisibility(binding.webView.canGoBack())
+                    changeBackVisibility()
                     viewModel.url = url
                     viewModel.setLastBrowsedLink(url)
                     when {
@@ -307,6 +317,7 @@ class WebViewFragment : Fragment() {
                     result: JsResult?
                 ): Boolean {
                     Log.d("WebView", "JS Alert: $message")
+                    context.toast(message)
                     result?.confirm()
                     return true
                 }
@@ -420,12 +431,21 @@ class WebViewFragment : Fragment() {
         }
     }
 
+    private fun changeBackVisibility(timeMillis: Long = 0L) {
+        MainScope().launch {
+            delay(timeMillis)
+            binding.btnBack.changeVisibility(binding.webView.canGoBack() || viewModel.currentIndex != 0)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         if(!isFilePickerActive)
             binding.webView.loadUrl(viewModel.getLastBrowsedLink())
         else
             isFilePickerActive = false
+        viewModel.currentIndex = arguments?.getInt("index") ?: 0
+        changeBackVisibility()
     }
 
     override fun onPause() {

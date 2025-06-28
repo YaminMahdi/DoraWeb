@@ -13,46 +13,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <FrameLayout
-        android:layout_width="wrap_content"
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="310dp"
+        android:layout_gravity="end"
         android:layout_height="match_parent"
-        android:layout_gravity="end">
-        <com.google.android.material.navigation.NavigationView
-            android:id="@+id/nav_view"
-            android:layout_width="310dp"
-            android:layout_height="match_parent"
-            android:backgroundTint="?backgroundColor"
-            android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header_main" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_gravity="bottom"
-            android:padding="10dp"
-            android:layout_marginHorizontal="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/powered_by"
-                android:textColor="?colorControlNormal"
-                android:textStyle="bold"
-                android:paddingStart="4.5dp"
-                android:textSize="10sp"
-                android:layout_marginTop="10dp"
-                />
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/nav_header_desc"
-                android:scaleType="centerCrop"
-                app:srcCompat="@drawable/logo" />
-        </LinearLayout>
-
-    </FrameLayout>
-
-
+        android:backgroundTint="?backgroundColor"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_main" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

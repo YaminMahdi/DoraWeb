@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.dora.web.BuildConfig
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -45,4 +46,9 @@ fun Activity.showExitDialog() {
         }
         .setCancelable(true) // Allow dismissing by touching outside
         .show()
+}
+
+fun Context?.toast(text: String?, duration: Int = Toast.LENGTH_SHORT) {
+    this ?: return
+    text?.let { Toast.makeText(this, text, duration).show() }
 }

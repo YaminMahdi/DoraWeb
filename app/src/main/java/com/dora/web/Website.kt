@@ -7,7 +7,7 @@ const val baseUrl = BuildConfig.BASE_URL
 enum class Website(val url: String, @param:DrawableRes val icon: Int = R.drawable.web) {
     Home(baseUrl, R.drawable.home),
     OurServices("$baseUrl/services"),
-    About("$baseUrl/about"),
+    About("$baseUrl/about", R.drawable.ic_info),
 }
 
 val Website.pageName
