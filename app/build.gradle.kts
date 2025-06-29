@@ -70,3 +70,35 @@ dependencies {
     implementation(libs.app.update)
     implementation(libs.app.update.ktx)
 }
+
+tasks.register("updateRootProjectName") {
+    group = "configuration"
+    description = "Updates rootProject.name in settings.gradle.kts from ProjectConfig"
+
+    doLast {
+        val projectConfigClass = Class
+            .forName("ProjectConfig")
+            .kotlin
+            .objectInstance ?: error("ProjectConfig not found")
+
+        val name = projectConfigClass
+            .javaClass
+            .getDeclaredField("applicationName")
+            .get(projectConfigClass) as String
+
+        val settingsFile = rootProject.file("settings.gradle.kts")
+        val content = settingsFile.readText()
+
+        // Fixed regex pattern - removed the extra quote at the end
+        val updatedContent = content.replace(Regex("""rootProject\.name\s*=\s*"[^"]*"""")) {
+            "rootProject.name = \"$name\""
+        }
+
+        settingsFile.writeText(updatedContent)
+        println("rootProject.name updated to \"$name\" in settings.gradle.kts")
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("updateRootProjectName")
+}
