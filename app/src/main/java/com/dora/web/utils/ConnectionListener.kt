@@ -11,14 +11,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.time.Duration.Companion.seconds
 
 
 class ConnectionListener(
@@ -30,7 +28,7 @@ class ConnectionListener(
         NoConnection,
         Dismissed
     }
-    
+
     var isConnected: Boolean = isNetworkAvailable()
     var shouldReactOnChanges: Boolean = true
         set(value) {
@@ -139,11 +137,13 @@ class ConnectionListener(
     private var statusJob : Job? = null
     private val statusScope = CoroutineScope(Dispatchers.IO)
 
-    private fun updateConnectionStatus() {
+    fun updateConnectionStatus() {
+        connectionStatusFlow.value = State.Default
         statusJob?.cancel()
         statusJob = statusScope.launch {
             val networkAvailable = isNetworkAvailable()
             isConnected = networkAvailable
+            "ConnectionListener updateConnectionStatus isConnected: $isConnected".log("ConnectionListener")
             connectionStatusFlow.value = if (isConnected) {
                 State.HasConnection
             } else {

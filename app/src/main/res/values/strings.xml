@@ -12,4 +12,5 @@
     <string name="go_back">go back</string>
     <string name="back">Back</string>
     <string name="powered_by">Powered by</string>
+    <string name="welcome">Welcome!</string>
 </resources>

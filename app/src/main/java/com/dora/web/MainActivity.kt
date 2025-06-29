@@ -1,5 +1,6 @@
 package com.dora.web
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +22,7 @@ import androidx.navigation.fragment.findNavController
 import com.dora.web.databinding.ActivityMainBinding
 import com.dora.web.utils.ConnectionListener
 import com.dora.web.utils.InAppUpdate
+import com.dora.web.utils.log
 import com.dora.web.utils.showExitDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.delay
@@ -71,6 +73,8 @@ class MainActivity : AppCompatActivity() {
                 Website.entries.forEach {
                     add(0, it.ordinal, Menu.NONE, it.pageName).setIcon(it.icon)
                 }
+                if (BuildConfig.showShareApp)
+                    add(1, 1, Menu.NONE, "Share this app").setIcon(R.drawable.share)
                 add(1, 0, Menu.NONE, "Exit").setIcon(R.drawable.ic_logout)
                 setGroupCheckable(0, true, true)
                 setGroupCheckable(1, false, true)
@@ -81,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                 .findNavController()
         }
     }
+
 
     private fun setupListener() {
         binding.apply {
@@ -93,23 +98,29 @@ class MainActivity : AppCompatActivity() {
             }
             navView.setNavigationItemSelectedListener {
                 drawerLayout.closeDrawers()
-                if(it.groupId ==1) {
-                    showExitDialog()
-                    return@setNavigationItemSelectedListener true
-                }
-                val currentUrl = Website.entries[it.itemId].url
-                viewModel.url = currentUrl
-                viewModel.currentIndex = it.itemId
-                runCatching {
-                    navController.navigate(
-                        resId = R.id.nav_web,
-                        args = bundleOf("url" to currentUrl, "index" to it.itemId),
-                        navOptions = NavOptions.Builder().build().apply {
-                            shouldPopUpToSaveState()
-                            shouldRestoreState()
-                            shouldLaunchSingleTop()
+                when (it.groupId) {
+                    1 -> {
+                        when(it.itemId){
+                            0 -> showExitDialog()
+                            1 -> shareApp()
                         }
-                    )
+                    }
+                    else -> {
+                        val currentUrl = Website.entries[it.itemId].url
+                        viewModel.url = currentUrl
+                        viewModel.currentIndex = it.itemId
+                        runCatching {
+                            navController.navigate(
+                                resId = R.id.nav_web,
+                                args = bundleOf("url" to currentUrl, "index" to it.itemId),
+                                navOptions = NavOptions.Builder().build().apply {
+                                    shouldPopUpToSaveState()
+                                    shouldRestoreState()
+                                    shouldLaunchSingleTop()
+                                }
+                            )
+                        }
+                    }
                 }
                 true
             }
@@ -117,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             delay(2.seconds)
             connectionListener.connectionStatusFlow.collect {
+                "ConnectionListener connectionStatusFlow collect: $it".log("ConnectionListener")
                 when(it){
                     ConnectionListener.State.Default -> {
                         // Initial state, no action needed
@@ -162,8 +174,18 @@ class MainActivity : AppCompatActivity() {
         noInternetDialog = null
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
+    private fun shareApp() {
+        val playStoreUrl = "https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}"
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, playStoreUrl)
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, "Share this app")
+        startActivity(shareIntent)
+
     }
 }
 

@@ -20,8 +20,7 @@
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:visibility="visible"
+            android:visibility="invisible"
             android:clickable="true"
             android:contentDescription="@string/go_back"
             android:focusable="true"
@@ -46,11 +45,22 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/txtWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome"
+            android:paddingHorizontal="2dp"
+            android:layout_gravity="center|start"
+            android:textColor="?colorControlNormal"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/btnMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center|end"
             app:cardBackgroundColor="?colorPrimary"
             app:strokeWidth="0dp">
 

@@ -19,6 +19,8 @@ android {
         buildConfigField("boolean", "showToolbar", "Boolean.parseBoolean(\"${ProjectConfig.showToolbar}\")")
         buildConfigField("boolean", "showLoading", "Boolean.parseBoolean(\"${ProjectConfig.showLoading}\")")
         buildConfigField("boolean", "showMenu", "Boolean.parseBoolean(\"${ProjectConfig.showMenu}\")")
+        buildConfigField("boolean", "showShareApp", "Boolean.parseBoolean(\"${ProjectConfig.showShareApp}\")")
+        buildConfigField("boolean", "showWelcome", "Boolean.parseBoolean(\"${ProjectConfig.showWelcome}\")")
         resValue("string", "app_name", ProjectConfig.applicationName)
         resValue("color", "colorPrimary", ProjectConfig.colorPrimary)
     }
@@ -36,8 +38,8 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-    kotlin{
-        jvmToolchain(ProjectConfig.javaVersion.toString().toInt())
+    kotlin {
+        jvmToolchain(ProjectConfig.javaVersion)
     }
     buildFeatures {
         viewBinding = true
@@ -46,7 +48,7 @@ android {
     applicationVariants.all {
         outputs.forEach {
             val output = it as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "${rootProject.name}-v$versionName($versionCode)-$name.apk"
+            output.outputFileName = "${ProjectConfig.applicationName}-v$versionName($versionCode)-$name.apk"
         }
     }
 }

@@ -28,6 +28,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -37,8 +38,6 @@ import com.dora.web.utils.changeVisibility
 import com.dora.web.utils.invisible
 import com.dora.web.utils.showExitDialog
 import com.dora.web.utils.toast
-import com.dora.web.utils.visible
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -57,8 +56,7 @@ class WebViewFragment : Fragment() {
                     grant(resources)
 //                    if(photoUri!= null)
 //                        launcherCamera.launch(photoUri)
-                }
-                else deny()
+                } else deny()
             }
         }
 
@@ -109,6 +107,7 @@ class WebViewFragment : Fragment() {
         binding.toolbar.changeVisibility(BuildConfig.showToolbar)
         binding.progressBar.changeVisibility(BuildConfig.showLoading)
         binding.btnMenu.changeVisibility(BuildConfig.showMenu)
+        binding.txtWelcome.changeVisibility(BuildConfig.showWelcome)
     }
 
 
@@ -121,24 +120,23 @@ class WebViewFragment : Fragment() {
         }
         binding.pullToRefresh.setOnRefreshListener {
             binding.webView.reload()
+            connectionListener.updateConnectionStatus()
         }
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
             val drawer = activity?.findViewById<DrawerLayout>(R.id.drawer_layout)
             if (drawer?.isDrawerOpen(GravityCompat.END) == true)
                 drawer.close()
-            else if (binding.webView.canGoBack())
+            else if (binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url)
                 binding.webView.goBack()
             else if (viewModel.currentIndex != 0) {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()
                 isEnabled = true
-            }
-            else
+            } else
                 activity?.showExitDialog()
             changeBackVisibility()
         }
     }
-
 
 
     @Suppress("DEPRECATION")
@@ -206,7 +204,8 @@ class WebViewFragment : Fragment() {
                 setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
                 // Set user agent to modern browser
-                userAgentString = "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; ${Build.MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+                userAgentString =
+                    "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; ${Build.MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
 //                userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
                 // Enable multiple windows support
@@ -221,7 +220,7 @@ class WebViewFragment : Fragment() {
             // Enable debugging for development
 
             WebView.setWebContentsDebuggingEnabled(true)
-            if(BuildConfig.showLoading)
+            if (BuildConfig.showLoading)
                 binding.progressBar.progress = progress
             webViewClient = object : WebViewClient() {
 
@@ -236,7 +235,8 @@ class WebViewFragment : Fragment() {
                 override fun onPageFinished(view: WebView, url: String) {
                     super.onPageFinished(view, url)
                     Log.d("WebView", "Page finished loading: $url")
-                    view.evaluateJavascript("""
+                    view.evaluateJavascript(
+                        """
                         (function(history){
                             var pushState = history.pushState;
                             var replaceState = history.replaceState;
@@ -264,9 +264,11 @@ class WebViewFragment : Fragment() {
                             // Optional: Trigger once on page load (to catch initial URL)
                             notifyUrlChange();
                         })(window.history);
-                    """.trimIndent(), null)
+                    """.trimIndent(), null
+                    )
                     changeProgressVisibility(false, 500)
                 }
+
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                     changeProgressVisibility(true)
@@ -277,17 +279,20 @@ class WebViewFragment : Fragment() {
                 override fun onReceivedError(
                     view: WebView?,
                     request: WebResourceRequest?,
-                    error: WebResourceError?
+                    error: WebResourceError?,
                 ) {
                     super.onReceivedError(view, request, error)
-                    Log.e("WebView", "Error: ${ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) error?.description else "Unknown error"}")
+                    Log.e(
+                        "WebView",
+                        "Error: ${if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) error?.description else "Unknown error"}"
+                    )
 
                 }
 
                 override fun onReceivedHttpError(
                     view: WebView?,
                     request: WebResourceRequest?,
-                    errorResponse: WebResourceResponse?
+                    errorResponse: WebResourceResponse?,
                 ) {
                     super.onReceivedHttpError(view, request, errorResponse)
                     Log.e("WebView", "HTTP Error: ${errorResponse?.statusCode}")
@@ -319,12 +324,18 @@ class WebViewFragment : Fragment() {
 
                         url.contains("youtube.com/") || url.contains("youtu.be/") ->
                             startActivity(
-                                Intent(Intent.ACTION_VIEW, url.toUri()).setPackage("com.google.android.youtube")
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    url.toUri()
+                                ).setPackage("com.google.android.youtube")
                             )
 
                         url.startsWith("fb://") ->
                             startActivity(
-                                Intent(Intent.ACTION_VIEW, url.toUri()).setPackage("com.facebook.katana")
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    url.toUri()
+                                ).setPackage("com.facebook.katana")
                             )
 
                         else -> {
@@ -338,14 +349,18 @@ class WebViewFragment : Fragment() {
             webChromeClient = object : WebChromeClient() {
 
                 override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                    Log.d("WebView Console", "${consoleMessage?.message()} -- From line ${consoleMessage?.lineNumber()} of ${consoleMessage?.sourceId()}")
+                    Log.d(
+                        "WebView Console",
+                        "${consoleMessage?.message()} -- From line ${consoleMessage?.lineNumber()} of ${consoleMessage?.sourceId()}"
+                    )
                     return true
                 }
+
                 override fun onJsAlert(
                     view: WebView?,
                     url: String?,
                     message: String?,
-                    result: JsResult?
+                    result: JsResult?,
                 ): Boolean {
                     Log.d("WebView", "JS Alert: $message")
                     context.toast(message)
@@ -357,7 +372,7 @@ class WebViewFragment : Fragment() {
                     view: WebView?,
                     url: String?,
                     message: String?,
-                    result: JsResult?
+                    result: JsResult?,
                 ): Boolean {
                     Log.d("WebView", "JS Confirm: $message")
                     result?.confirm()
@@ -371,7 +386,7 @@ class WebViewFragment : Fragment() {
                     fileChooserParams: FileChooserParams?,
                 ): Boolean {
                     filePickerCallback = filePathCallback
-                    val acceptTypes= fileChooserParams?.acceptTypes?.toList().orEmpty()
+                    val acceptTypes = fileChooserParams?.acceptTypes?.toList().orEmpty()
                     Log.d(TAG, "onShowFileChooser: $acceptTypes")
 //                    val captureEnabled = fileChooserParams?.isCaptureEnabled ?: false
                     val isPhoto = acceptTypes.find {
@@ -385,18 +400,40 @@ class WebViewFragment : Fragment() {
                         FileChooserParams.MODE_OPEN -> {
 
                             if (isPhoto)
-                                launcherSingleMediaPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                launcherSingleMediaPicker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
+                                )
                             else if (isVideo)
-                                launcherSingleMediaPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly))
+                                launcherSingleMediaPicker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.VideoOnly
+                                    )
+                                )
                             else
-                                launcherFilePicker.launch(Intent.createChooser(Intent().setType("*/*").setAction(Intent.ACTION_GET_CONTENT), "Select a file"))
+                                launcherFilePicker.launch(
+                                    Intent.createChooser(
+                                        Intent().setType("*/*")
+                                            .setAction(Intent.ACTION_GET_CONTENT), "Select a file"
+                                    )
+                                )
                             isFilePickerActive = true
                         }
-                        FileChooserParams.MODE_OPEN_MULTIPLE ->{
-                            if(isPhoto)
-                                launcherMultipleMediaPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                            else if(isVideo)
-                                launcherMultipleMediaPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly))
+
+                        FileChooserParams.MODE_OPEN_MULTIPLE -> {
+                            if (isPhoto)
+                                launcherMultipleMediaPicker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
+                                )
+                            else if (isVideo)
+                                launcherMultipleMediaPicker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.VideoOnly
+                                    )
+                                )
                             else {
                                 launcherFilePicker.launch(
                                     Intent.createChooser(
@@ -449,18 +486,20 @@ class WebViewFragment : Fragment() {
     private fun changeBackVisibility(timeMillis: Long = 0L) {
         lifecycleScope.launch {
             delay(timeMillis)
-            binding.btnBack.changeVisibility(binding.webView.canGoBack() || viewModel.currentIndex != 0)
+            val showBack = binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url
+            if(BuildConfig.showWelcome)
+                binding.txtWelcome.changeVisibility(!showBack)
+            binding.btnBack.changeVisibility(showBack, false)
         }
     }
 
     private fun changeProgressVisibility(isVisible: Boolean, timeMillis: Long = 0L) {
         lifecycleScope.launch {
-            delay(200)
             delay(timeMillis)
-            if(binding.pullToRefresh.isRefreshing && !isVisible) {
+            if (binding.pullToRefresh.isRefreshing && !isVisible) {
                 binding.pullToRefresh.isRefreshing = false
             }
-            if(!BuildConfig.showLoading || binding.pullToRefresh.isRefreshing) return@launch
+            if (!BuildConfig.showLoading || binding.pullToRefresh.isRefreshing) return@launch
             binding.progressBar.changeVisibility(isVisible, useGone = false)
             if (!isVisible) return@launch
             delay(1.7.seconds)
@@ -470,7 +509,7 @@ class WebViewFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if(!isFilePickerActive)
+        if (!isFilePickerActive)
             binding.webView.loadUrl(viewModel.getLastBrowsedLink())
         else
             isFilePickerActive = false
