@@ -28,7 +28,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -41,7 +40,6 @@ import com.dora.web.utils.toast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
-
 
 class WebViewFragment : Fragment() {
     private lateinit var binding: FragmentWebViewBinding
@@ -486,7 +484,8 @@ class WebViewFragment : Fragment() {
     private fun changeBackVisibility(timeMillis: Long = 0L) {
         lifecycleScope.launch {
             delay(timeMillis)
-            val showBack = binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url
+            val currentUrl = binding.webView.url?.trim { it == '/' }
+            val showBack =  currentUrl != Website.Home.url
             if(BuildConfig.showWelcome)
                 binding.txtWelcome.changeVisibility(!showBack)
             binding.btnBack.changeVisibility(showBack, false)
