@@ -7,7 +7,7 @@ val baseUrl = BuildConfig.BASE_URL.trim { it == '/' }
 enum class Website(val url: String, @param:DrawableRes val icon: Int) {
     Home(baseUrl, R.drawable.home),
     Services("$baseUrl/services", R.drawable.ic_puzzle),
-    About("$baseUrl/domain", R.drawable.ic_info),
+    About("$baseUrl/about", R.drawable.ic_info),
 }
 
 val Website.pageName
