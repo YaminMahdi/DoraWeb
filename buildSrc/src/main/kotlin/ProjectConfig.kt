@@ -14,6 +14,7 @@ object ProjectConfig {
     const val showToolbar = true
     const val showLoading = true
     const val showMenu = true
+    const val showVisitWebsite = true
     const val showShareApp = true
     const val showWelcome = true
     const val colorPrimary = "#4590FF"

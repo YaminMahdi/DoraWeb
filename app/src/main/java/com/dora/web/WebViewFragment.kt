@@ -124,13 +124,13 @@ class WebViewFragment : Fragment() {
             val drawer = activity?.findViewById<DrawerLayout>(R.id.drawer_layout)
             if (drawer?.isDrawerOpen(GravityCompat.END) == true)
                 drawer.close()
-            else if (binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url)
-                binding.webView.goBack()
             else if (viewModel.currentIndex != 0) {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()
                 isEnabled = true
-            } else
+            }
+            else if (binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url)
+                binding.webView.goBack()else
                 activity?.showExitDialog()
             changeBackVisibility()
         }

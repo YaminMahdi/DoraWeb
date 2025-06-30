@@ -19,6 +19,7 @@ android {
         buildConfigField("boolean", "showToolbar", "Boolean.parseBoolean(\"${ProjectConfig.showToolbar}\")")
         buildConfigField("boolean", "showLoading", "Boolean.parseBoolean(\"${ProjectConfig.showLoading}\")")
         buildConfigField("boolean", "showMenu", "Boolean.parseBoolean(\"${ProjectConfig.showMenu}\")")
+        buildConfigField("boolean", "showVisitWebsite", "Boolean.parseBoolean(\"${ProjectConfig.showVisitWebsite}\")")
         buildConfigField("boolean", "showShareApp", "Boolean.parseBoolean(\"${ProjectConfig.showShareApp}\")")
         buildConfigField("boolean", "showWelcome", "Boolean.parseBoolean(\"${ProjectConfig.showWelcome}\")")
         resValue("string", "app_name", ProjectConfig.applicationName)
