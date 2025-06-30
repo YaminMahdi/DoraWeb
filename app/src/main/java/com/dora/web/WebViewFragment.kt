@@ -478,9 +478,7 @@ class WebViewFragment : Fragment() {
                 }
 
             }
-        }
-        arguments?.getString("url")?.let {
-            binding.webView.loadUrl(it)
+            loadUrl(arguments?.getString("url") ?: baseUrl)
         }
     }
 
