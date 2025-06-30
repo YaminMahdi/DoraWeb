@@ -478,6 +478,7 @@ class WebViewFragment : Fragment() {
                 }
 
             }
+            loadUrl(arguments?.getString("url") ?: baseUrl)
         }
     }
 
@@ -508,9 +509,7 @@ class WebViewFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!isFilePickerActive)
-            binding.webView.loadUrl(viewModel.getLastBrowsedLink())
-        else
+        if (isFilePickerActive)
             isFilePickerActive = false
         viewModel.currentIndex = arguments?.getInt("index") ?: 0
         changeBackVisibility()
