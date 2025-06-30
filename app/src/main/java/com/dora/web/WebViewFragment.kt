@@ -124,13 +124,13 @@ class WebViewFragment : Fragment() {
             val drawer = activity?.findViewById<DrawerLayout>(R.id.drawer_layout)
             if (drawer?.isDrawerOpen(GravityCompat.END) == true)
                 drawer.close()
-            else if (binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url)
-                binding.webView.goBack()
             else if (viewModel.currentIndex != 0) {
                 isEnabled = false
                 activity?.onBackPressedDispatcher?.onBackPressed()
                 isEnabled = true
-            } else
+            }
+            else if (binding.webView.canGoBack() && binding.webView.url?.trim { it == '/' } != Website.Home.url)
+                binding.webView.goBack() else
                 activity?.showExitDialog()
             changeBackVisibility()
         }
@@ -479,6 +479,9 @@ class WebViewFragment : Fragment() {
 
             }
         }
+        arguments?.getString("url")?.let {
+            binding.webView.loadUrl(it)
+        }
     }
 
     private fun changeBackVisibility(timeMillis: Long = 0L) {
@@ -508,9 +511,7 @@ class WebViewFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!isFilePickerActive)
-            binding.webView.loadUrl(viewModel.getLastBrowsedLink())
-        else
+        if (isFilePickerActive)
             isFilePickerActive = false
         viewModel.currentIndex = arguments?.getInt("index") ?: 0
         changeBackVisibility()
